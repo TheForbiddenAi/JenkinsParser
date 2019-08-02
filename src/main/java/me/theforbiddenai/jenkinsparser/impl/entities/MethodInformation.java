@@ -1,6 +1,7 @@
 package me.theforbiddenai.jenkinsparser.impl.entities;
 
 import me.theforbiddenai.jenkinsparser.Information;
+import me.theforbiddenai.jenkinsparser.impl.Utilites;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Document;
@@ -67,26 +68,13 @@ public class MethodInformation implements Information {
         return methodElement.selectFirst("div.block").html();
     }
 
-    public @NotNull HashMap<String, List<String>> getExtraInformation (boolean rawHtml) {
-        HashMap<String, List<String>> extraInfo = new HashMap<>();
-
-        methodElement.selectFirst("dl").select("dt").forEach(label -> {
-            Element nextElement = label.nextElementSibling();
-            List<String> info = new ArrayList<>();
-            while(nextElement != null && nextElement.nodeName().equals("dd")) {
-                info.add(rawHtml ? nextElement.html() : nextElement.text());
-                nextElement = nextElement.nextElementSibling();
-            }
-
-            extraInfo.put(label.text(), info);
-        });
-
-        return extraInfo;
-    }
-
     @Override
     public @NotNull String getUrl() {
         return methodUrl;
+    }
+
+    public @NotNull HashMap<String, List<String>> getExtraInformation (boolean rawHtml) {
+        return Utilites.getExtraInformation(methodElement, rawHtml);
     }
 
     public @NotNull Element getMethodElement() {

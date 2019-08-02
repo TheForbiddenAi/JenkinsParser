@@ -20,7 +20,7 @@ public class JenkinsImpl implements Jenkins {
     private String baseURL;
     private ArrayList<Element> classList;
 
-    // URL must be a link the class list
+    // URL must be a link to the class list
     public JenkinsImpl(@NotNull String url) {
         url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
 
@@ -28,8 +28,43 @@ public class JenkinsImpl implements Jenkins {
         baseURL = url.substring(0, url.lastIndexOf("/") + 1);
     }
 
+    /**
+     * Gets the requested information based on the search query
+     * @param query The search query
+     * @return The found information based on the search query or null
+     */
     public Information search(String query) {
-        return new ClassInformation(baseURL, classList, "Component");
+
+        if(query.length() == 0) throw new Error("Invalid query!");
+
+        query = query.replace("#", ".");
+        query = query.endsWith(".") ? query.substring(0, query.length() - 1) : query;
+
+        try {
+            return getClass(query);
+        } catch (NullPointerException ignored) {}
+
+        String className = query.contains(".") ? query.substring(0, query.lastIndexOf(".")) : query;
+        String objectName = query.contains(".") ? query.substring(query.lastIndexOf(".") + 1) : null;
+
+        ClassInformation classInfo = getClass(className);
+        if(objectName != null) {
+            try {
+                return getMethod(classInfo, objectName);
+            } catch (NullPointerException ignored) {}
+
+            try {
+                return getEnum(classInfo, objectName);
+            } catch (NullPointerException ignored) {}
+
+            try {
+                return getField(classInfo, objectName);
+            } catch (NullPointerException ignored) {}
+
+            throw new NullPointerException("Couldn't find the specified query!");
+        }
+
+        return null;
     }
 
     /**

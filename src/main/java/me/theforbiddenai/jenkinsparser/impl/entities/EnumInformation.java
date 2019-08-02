@@ -5,6 +5,7 @@ import me.theforbiddenai.jenkinsparser.impl.Utilites;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Element;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class EnumInformation implements Information {
@@ -46,6 +47,11 @@ public class EnumInformation implements Information {
     @Override
     public @NotNull String getUrl() {
         return enumUrl;
+    }
+
+    @Override
+    public @NotNull HashMap<String, List<String>> getExtraInformation(boolean rawHtml) {
+        return Utilites.getExtraInformation(enumElement, rawHtml);
     }
 
     public @NotNull Element getElement() {

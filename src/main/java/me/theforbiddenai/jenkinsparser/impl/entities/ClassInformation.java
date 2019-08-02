@@ -1,6 +1,7 @@
 package me.theforbiddenai.jenkinsparser.impl.entities;
 
 import me.theforbiddenai.jenkinsparser.Information;
+import me.theforbiddenai.jenkinsparser.impl.Utilites;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
@@ -27,69 +28,6 @@ public class ClassInformation implements Information {
         }
     }
 
-    /**
-     * Retrieves the specific class, works with nested classes as well
-     *
-     * @param classList The element list containing all of the class (does not contain nested classes)
-     * @param className The name of the class being searched for
-     * @return The document for the class or null if none is found
-     */
-    private @Nullable Document retrieveClass(ArrayList<Element> classList, String className) {
-
-        List<Element> elementList = classList.stream()
-                .filter(element -> element.text().equalsIgnoreCase(className.replace("#", ".")))
-                .collect(Collectors.toList());
-
-        String[] queryArgs = className.replace("#", ".").split("\\.");
-        if (elementList.size() == 0 && queryArgs.length > 1) {
-
-            elementList = classList.stream()
-                    .filter(element -> element.text().equalsIgnoreCase(queryArgs[0]))
-                    .collect(Collectors.toList());
-
-            if (elementList.size() == 0) return null;
-
-            classDocument = getDocument(baseUrl + elementList.get(0).selectFirst("a").attr("href"));
-            HashMap<String, String> nestedClassList = getNestedClassLinkList();
-
-            if (nestedClassList == null || nestedClassList.size() == 0) return null;
-
-            StringBuilder nestName = new StringBuilder(queryArgs[0]);
-
-            // Loops through the queryArgs and nestedClassList until it finds the specific nested class
-            for (int i = 1; i < queryArgs.length; i++) {
-                for (String name : nestedClassList.keySet()) {
-
-                    classDocument = null;
-                    if (name.equalsIgnoreCase(nestName.toString() + "." + queryArgs[i])) {
-                        String url = nestedClassList.get(name);
-                        classDocument = getDocument(url);
-
-                        // Updates the nested class list
-                        nestedClassList = getNestedClassLinkList();
-
-                        nestName.append(".").append(queryArgs[i]);
-                    }
-                }
-            }
-
-            return classDocument;
-        } else {
-            return getDocument(baseUrl + elementList.get(0).selectFirst("a").attr("href"));
-        }
-
-    }
-
-
-    private @Nullable Document getDocument(String url) {
-        try {
-            return Jsoup.connect(url).get();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
     public @NotNull String getName() {
         return classDocument.selectFirst("h2").text();
     }
@@ -104,13 +42,17 @@ public class ClassInformation implements Information {
         return classDocument.selectFirst("div.block").html();
     }
 
-    public @NotNull Document getClassDocument() {
-        return classDocument;
-    }
-
-
     public @NotNull String getUrl() {
         return classDocument.baseUri();
+    }
+
+    public @NotNull HashMap<String, List<String>> getExtraInformation (boolean rawHtml) {
+        Element classDescBlock = classDocument.selectFirst("div.description");
+        return Utilites.getExtraInformation(classDescBlock, rawHtml);
+    }
+
+    public @NotNull Document getClassDocument() {
+        return classDocument;
     }
 
     public @Nullable ArrayList<String> getNestedClassList() {
@@ -215,5 +157,66 @@ public class ClassInformation implements Information {
         return methodList;
     }
 
+    /**
+     * Retrieves the specific class, works with nested classes as well
+     *
+     * @param classList The element list containing all of the class (does not contain nested classes)
+     * @param className The name of the class being searched for
+     * @return The document for the class or null if none is found
+     */
+    private @Nullable Document retrieveClass(ArrayList<Element> classList, String className) {
+
+        List<Element> elementList = classList.stream()
+                .filter(element -> element.text().equalsIgnoreCase(className.replace("#", ".")))
+                .collect(Collectors.toList());
+
+        String[] queryArgs = className.replace("#", ".").split("\\.");
+        if (elementList.size() == 0 && queryArgs.length > 1) {
+
+            elementList = classList.stream()
+                    .filter(element -> element.text().equalsIgnoreCase(queryArgs[0]))
+                    .collect(Collectors.toList());
+
+            if (elementList.size() == 0) return null;
+
+            classDocument = getDocument(baseUrl + elementList.get(0).selectFirst("a").attr("href"));
+            HashMap<String, String> nestedClassList = getNestedClassLinkList();
+
+            if (nestedClassList == null || nestedClassList.size() == 0) return null;
+
+            StringBuilder nestName = new StringBuilder(queryArgs[0]);
+
+            // Loops through the queryArgs and nestedClassList until it finds the specific nested class
+            for (int i = 1; i < queryArgs.length; i++) {
+                for (String name : nestedClassList.keySet()) {
+
+                    classDocument = null;
+                    if (name.equalsIgnoreCase(nestName.toString() + "." + queryArgs[i])) {
+                        String url = nestedClassList.get(name);
+                        classDocument = getDocument(url);
+
+                        // Updates the nested class list
+                        nestedClassList = getNestedClassLinkList();
+
+                        nestName.append(".").append(queryArgs[i]);
+                    }
+                }
+            }
+
+            return classDocument;
+        } else {
+            return getDocument(baseUrl + elementList.get(0).selectFirst("a").attr("href"));
+        }
+
+    }
+
+    private @Nullable Document getDocument(String url) {
+        try {
+            return Jsoup.connect(url).get();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
 
 }

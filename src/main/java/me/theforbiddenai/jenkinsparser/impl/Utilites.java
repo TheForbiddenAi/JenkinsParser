@@ -1,6 +1,7 @@
 package me.theforbiddenai.jenkinsparser.impl;
 
 import me.theforbiddenai.jenkinsparser.impl.entities.ClassInformation;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -52,6 +53,24 @@ public class Utilites {
         info.add(elementList.get(0));
 
         return info;
+    }
+
+    public static @NotNull HashMap<String, List<String>> getExtraInformation (Element element, boolean rawHtml) {
+        HashMap<String, List<String>> extraInfo = new HashMap<>();
+
+        element.select("dl").select("dt").forEach(label -> {
+            Element nextElement = label.nextElementSibling();
+            List<String> info = new ArrayList<>();
+            while(nextElement != null && nextElement.nodeName().equals("dd")) {
+                info.add(rawHtml ? nextElement.html() : nextElement.text());
+                nextElement = nextElement.nextElementSibling();
+            }
+
+            extraInfo.put(label.text(), info);
+        });
+
+
+        return extraInfo;
     }
 
 }

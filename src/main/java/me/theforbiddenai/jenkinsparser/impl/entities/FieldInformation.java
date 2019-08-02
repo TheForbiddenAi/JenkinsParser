@@ -5,6 +5,7 @@ import me.theforbiddenai.jenkinsparser.impl.Utilites;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.nodes.Element;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class FieldInformation implements Information {
@@ -49,6 +50,10 @@ public class FieldInformation implements Information {
 
     public @NotNull Element getElement() {
         return fieldElement;
+    }
+
+    public @NotNull HashMap<String, List<String>> getExtraInformation(boolean rawHtml) {
+        return Utilites.getExtraInformation(fieldElement, rawHtml);
     }
 
 }
