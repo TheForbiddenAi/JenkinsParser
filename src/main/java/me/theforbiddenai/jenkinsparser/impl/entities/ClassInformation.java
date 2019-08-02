@@ -146,8 +146,7 @@ public class ClassInformation implements Information {
                 .filter(element -> element.selectFirst("td") != null)
                 .forEach(tableRow -> {
                     Element column = tableRow.selectFirst(columnToGet);
-                    String methodName = tableRow.selectFirst("span.memberNameLink").text().trim()
-                            .replaceAll("[\\p{Cf}]", ""); // Removes invisible characters;
+                    String methodName = column.text();
 
                     String href = column.selectFirst("a").attr("href").replace("../", "");
                     String url = baseUrl + href;

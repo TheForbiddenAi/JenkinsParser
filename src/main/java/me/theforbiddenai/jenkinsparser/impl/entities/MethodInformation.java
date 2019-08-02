@@ -30,6 +30,7 @@ public class MethodInformation implements Information {
             this.methodElement = (Element) methods.keySet().toArray()[0];
             this.methodUrl = (String) methods.values().toArray()[0];
         } catch (NullPointerException | IndexOutOfBoundsException ex) {
+            ex.printStackTrace();
             throw new NullPointerException("Couldn't find the specified method!");
         }
     }
@@ -94,7 +95,8 @@ public class MethodInformation implements Information {
         if (methodLinkList == null) return null;
 
         methodLinkList.forEach((name, url) -> {
-            if(name.toLowerCase().contains(methodName.toLowerCase())) {
+            String check = name.substring(0, name.indexOf("("));
+            if(check.equalsIgnoreCase(methodName)) {
                 foundMethods.put(name, url);
             }
         });
