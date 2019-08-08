@@ -19,6 +19,27 @@ public class ClassInformation implements Information {
     private Document classDocument;
     private final String baseUrl;
 
+    private String name;
+    private String description;
+    private String rawDescription;
+    private String url;
+
+    private HashMap<String, List<String>> extraInformation;
+    private HashMap<String, List<String>> rawExtraInformation;
+
+    private ArrayList<String> nestedClassList;
+    private ArrayList<String> methodList;
+    private ArrayList<String> methodListWithParams;
+    private ArrayList<String> enumList;
+    private ArrayList<String> fieldList;
+
+    public ClassInformation(String baseUrl, @Nullable Document classDocument) {
+        this.baseUrl = baseUrl;
+        this.classDocument = classDocument;
+
+        init();
+    }
+
     public ClassInformation(String baseUrl, ArrayList<Element> classList, String className) {
         this.baseUrl = baseUrl;
 
@@ -26,50 +47,115 @@ public class ClassInformation implements Information {
         if (classDocument == null) {
             throw new NullPointerException("Class not found!");
         }
+
+        init();
     }
 
-    public @NotNull String getName() {
-        return classDocument.selectFirst("h2").text();
+    @Override
+    public @Nullable String getName() {
+        return name;
     }
 
-    public @NotNull String getDescription() {
-        if (classDocument.selectFirst("div.block") == null) return "";
-        return classDocument.selectFirst("div.block").text();
+    @Override
+    public @Nullable String getDescription() {
+        return description;
     }
 
-    public @NotNull String getRawDescription() {
-        if (classDocument.selectFirst("div.block") == null) return "";
-        return classDocument.selectFirst("div.block").html();
+    @Override
+    public @Nullable String getRawDescription() {
+        return rawDescription;
     }
 
-    public @NotNull String getUrl() {
-        return classDocument.baseUri();
+    @Override
+    public @Nullable String getUrl() {
+        return url;
     }
 
-    public @NotNull HashMap<String, List<String>> getExtraInformation (boolean rawHtml) {
-        Element classDescBlock = classDocument.selectFirst("div.description");
-        return Utilites.getExtraInformation(classDescBlock, rawHtml);
+    @Override
+    public @Nullable HashMap<String, List<String>> getExtraInformation() {
+        return extraInformation;
     }
 
-    public @NotNull Document getClassDocument() {
-        return classDocument;
+    @Override
+    public @Nullable HashMap<String, List<String>> getRawExtraInformation() {
+        return rawExtraInformation;
     }
 
     public @Nullable ArrayList<String> getNestedClassList() {
-        return getList("nested.class.summary", false);
+        return nestedClassList;
     }
 
-    public @Nullable ArrayList<String> getMethodList(boolean withParams) {
-        return getList("method.summary", withParams);
+    public @Nullable ArrayList<String> getMethodList() {
+        return methodList;
+    }
+
+    public @Nullable ArrayList<String> getMethodListWithParameters() {
+        return methodListWithParams;
     }
 
     public @Nullable ArrayList<String> getEnumList() {
-        return getList("enum.constant.summary", false);
+        return enumList;
     }
 
     public @Nullable ArrayList<String> getFieldList() {
-        return getList("field.summary", false);
+        return fieldList;
     }
+
+    public @Nullable Document getClassDocument() {
+        return classDocument;
+    }
+
+    @Override
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setDescription(@NotNull String description) {
+        this.description = description;
+    }
+
+    @Override
+    public void setRawDescription(@NotNull String rawDescription) {
+        this.rawDescription = description;
+    }
+
+    @Override
+    public void setUrl(@NotNull String url) {
+        this.url = url;
+    }
+
+    @Override
+    public void setExtraInformation(@NotNull HashMap<String, List<String>> extraInformation) {
+        this.extraInformation = extraInformation;
+    }
+
+    @Override
+    public void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation) {
+        this.rawExtraInformation = rawExtraInformation;
+    }
+
+    public void setNestedClassList(@NotNull ArrayList<String> nestedClassList) {
+        this.nestedClassList = nestedClassList;
+    }
+
+    public void setMethodList(@NotNull ArrayList<String> methodList) {
+        this.methodList = methodList;
+    }
+
+    public void setMethodListWithParameters(@NotNull ArrayList<String> methodListWithParameters) {
+        this.methodListWithParams = methodListWithParameters;
+    }
+
+    public void setEnumList(@NotNull ArrayList<String> enumList) {
+        this.enumList = enumList;
+    }
+
+    public void setFieldList(@NotNull ArrayList<String> fieldList) {
+        this.fieldList = fieldList;
+    }
+
+    // LinkList methods are for internal use
 
     @Nullable HashMap<String, String> getNestedClassLinkList() {
         return getLinkList("nested.class.summary");
@@ -128,6 +214,8 @@ public class ClassInformation implements Information {
      */
     private @Nullable HashMap<String, String> getLinkList(String listName) {
         // This is the element that is inside the blocklist which contains the table
+        if (classDocument == null) return null;
+
         Element aElement = classDocument.selectFirst("a[name=" + listName + "]");
         if (aElement == null) aElement = classDocument.selectFirst("a[id=" + listName + "]");
         if (aElement == null) return null;
@@ -204,6 +292,7 @@ public class ClassInformation implements Information {
 
             return classDocument;
         } else {
+            if (elementList.size() == 0) return null;
             return getDocument(baseUrl + elementList.get(0).selectFirst("a").attr("href"));
         }
 
@@ -216,6 +305,34 @@ public class ClassInformation implements Information {
             ex.printStackTrace();
             return null;
         }
+    }
+
+    private void init() {
+        try {
+            name = classDocument.selectFirst("h2").text();
+
+            if (classDocument.select("div.block") == null) {
+                description = "";
+                rawDescription = "";
+            } else {
+                description = classDocument.selectFirst("div.block").text();
+                rawDescription = classDocument.selectFirst("div.block").html();
+            }
+
+            url = classDocument.baseUri();
+
+            Element classDescBlock = classDocument.selectFirst("div.description");
+            extraInformation = Utilites.getExtraInformation(classDescBlock, false);
+            rawExtraInformation = Utilites.getExtraInformation(classDescBlock, true);
+
+            nestedClassList = getList("nested.class.summary", false);
+            methodList = getList("method.summary", false);
+            methodListWithParams = getList("method.summary", true);
+            enumList = getList("enum.constant.summary", false);
+            fieldList = getList("field.summary", false);
+        } catch (NullPointerException ignored) {
+        }
+
     }
 
 }

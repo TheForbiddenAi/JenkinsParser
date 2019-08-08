@@ -3,6 +3,7 @@ package me.theforbiddenai.jenkinsparser.impl.entities;
 import me.theforbiddenai.jenkinsparser.Information;
 import me.theforbiddenai.jenkinsparser.impl.Utilites;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Element;
 
 import java.util.HashMap;
@@ -12,7 +13,27 @@ public class FieldInformation implements Information {
 
     private final ClassInformation classInfo;
     private final Element fieldElement;
-    private final String fieldUrl;
+
+    private String name;
+    private String description;
+    private String rawDescription;
+    private String url;
+
+    private HashMap<String, List<String>> extraInformation;
+    private HashMap<String, List<String>> rawExtraInformation;
+
+    public FieldInformation(@Nullable ClassInformation classInfo, @Nullable Element fieldElement) {
+        this.classInfo = classInfo;
+        this.fieldElement = fieldElement;
+
+        init();
+        if (fieldElement != null && classInfo != null) {
+            try {
+                this.url = classInfo.getUrl() + "#" + getName();
+            } catch (Exception ignored) {
+            }
+        }
+    }
 
     public FieldInformation(ClassInformation classInfo, String fieldName) {
         this.classInfo = classInfo;
@@ -23,37 +44,97 @@ public class FieldInformation implements Information {
         }
 
         this.fieldElement = (Element) fieldInfo.get(1);
-        this.fieldUrl = (String) fieldInfo.get(0);
+        this.url = (String) fieldInfo.get(0);
+
+        init();
     }
 
     @Override
     public @NotNull String getName() {
-        return fieldElement.selectFirst("h4").text();
+        return name;
     }
 
     @Override
     public @NotNull String getDescription() {
-        if (fieldElement.selectFirst("div.block") == null) return "";
-        return fieldElement.selectFirst("div.block").text();
+        return description;
     }
 
     @Override
     public @NotNull String getRawDescription() {
-        if (fieldElement.selectFirst("div.block") == null) return "";
-        return fieldElement.selectFirst("div.block").html();
+        return rawDescription;
     }
 
     @Override
     public @NotNull String getUrl() {
-        return fieldUrl;
+        return url;
     }
 
-    public @NotNull Element getElement() {
+    @Override
+    public @Nullable HashMap<String, List<String>> getExtraInformation() {
+        return extraInformation;
+    }
+
+    @Override
+    public @Nullable HashMap<String, List<String>> getRawExtraInformation() {
+        return rawExtraInformation;
+    }
+
+    public @Nullable ClassInformation getClassInfo() {
+        return classInfo;
+    }
+
+    public @Nullable Element getElement() {
         return fieldElement;
     }
 
-    public @NotNull HashMap<String, List<String>> getExtraInformation(boolean rawHtml) {
-        return Utilites.getExtraInformation(fieldElement, rawHtml);
+    @Override
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setDescription(@NotNull String description) {
+        this.description = description;
+    }
+
+    @Override
+    public void setRawDescription(@NotNull String rawDescription) {
+        this.rawDescription = description;
+    }
+
+    @Override
+    public void setUrl(@NotNull String url) {
+        this.url = url;
+    }
+
+    @Override
+    public void setExtraInformation(@NotNull HashMap<String, List<String>> extraInformation) {
+        this.extraInformation = extraInformation;
+    }
+
+    @Override
+    public void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation) {
+        this.rawExtraInformation = rawExtraInformation;
+    }
+
+
+    @SuppressWarnings("Duplicates")
+    private void init() {
+        try {
+            name = fieldElement.selectFirst("h4").text();
+
+            if (fieldElement.selectFirst("div.block") == null) {
+                description = "";
+                rawDescription = "";
+            } else {
+                description = fieldElement.selectFirst("div.block").text();
+                rawDescription = fieldElement.selectFirst("div.block").html();
+            }
+
+            extraInformation = Utilites.getExtraInformation(fieldElement, false);
+            rawExtraInformation = Utilites.getExtraInformation(fieldElement, true);
+        } catch (NullPointerException ignored) {
+        }
     }
 
 }

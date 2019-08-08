@@ -7,6 +7,7 @@ import me.theforbiddenai.jenkinsparser.impl.entities.EnumInformation;
 import me.theforbiddenai.jenkinsparser.impl.entities.FieldInformation;
 import me.theforbiddenai.jenkinsparser.impl.entities.MethodInformation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -166,7 +167,7 @@ public class JenkinsImpl implements Jenkins {
      * @param classListURL The jenkins url
      * @return The class list
      */
-    @NotNull
+    @Nullable
     private ArrayList<Element> getClassList(@NotNull String classListURL) {
         ArrayList<Element> classList = new ArrayList<>();
         try {
@@ -175,7 +176,7 @@ public class JenkinsImpl implements Jenkins {
             classListDoc.select("li").stream()
                     .filter(element -> element.selectFirst("a") != null)
                     .forEach(classList::add);
-        } catch (IOException | NullPointerException ex) {
+        } catch (IOException | NullPointerException | IllegalArgumentException ex) {
             ex.printStackTrace();
             throw new Error("Invalid jenkins url!");
         }

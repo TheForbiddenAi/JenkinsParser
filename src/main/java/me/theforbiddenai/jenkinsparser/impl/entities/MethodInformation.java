@@ -17,10 +17,18 @@ public class MethodInformation implements Information {
 
     private final ClassInformation classInfo;
     private final Element methodElement;
-    private final String methodUrl;
     private final HashMap<String, String> classMethodLinkList;
 
-    public MethodInformation(@NotNull ClassInformation classInfo, String methodName) {
+    private String name;
+    private String nameWithParameters;
+    private String description;
+    private String rawDescription;
+    private String url;
+
+    private HashMap<String, List<String>> extraInformation;
+    private HashMap<String, List<String>> rawExtraInformation;
+
+    public MethodInformation(ClassInformation classInfo, String methodName) {
         methodName = methodName.contains("(") ? methodName.substring(0, methodName.indexOf("(")) : methodName;
 
         this.classInfo = classInfo;
@@ -28,58 +36,98 @@ public class MethodInformation implements Information {
         try {
             HashMap<Element, String> methods = getMethods(methodName);
             this.methodElement = (Element) methods.keySet().toArray()[0];
-            this.methodUrl = (String) methods.values().toArray()[0];
+            this.url = (String) methods.values().toArray()[0];
+
+            init();
         } catch (NullPointerException | IndexOutOfBoundsException ex) {
             ex.printStackTrace();
             throw new NullPointerException("Couldn't find the specified method!");
         }
     }
 
-    private MethodInformation(ClassInformation classInfo, Element methodElement, String methodUrl) {
+    public MethodInformation(ClassInformation classInfo, Element methodElement, String methodUrl) {
         this.classInfo = classInfo;
         this.classMethodLinkList = classInfo.getMethodLinkList();
         this.methodElement = methodElement;
-        this.methodUrl = methodUrl;
+        this.url = methodUrl;
+
+        init();
     }
 
     @Override
-    public @NotNull String getName() {
-        return methodElement.selectFirst("h4").text().trim();
+    public @Nullable String getName() {
+        return name;
     }
 
-    public @NotNull String getNameWithParameters() {
-        for(Map.Entry<String, String> entrySet : classMethodLinkList.entrySet()) {
-            if(entrySet.getValue().equalsIgnoreCase(getUrl())) {
-                return entrySet.getKey();
-            }
-        }
-
-        return "";
+    public @Nullable String getNameWithParameters() {
+        return nameWithParameters;
     }
 
     @Override
-    public @NotNull String getDescription() {
-        if (methodElement.selectFirst("div.block") == null) return "";
-        return methodElement.selectFirst("div.block").text();
+    public @Nullable String getDescription() {
+        return description;
     }
 
     @Override
-    public @NotNull String getRawDescription() {
-        if (methodElement.selectFirst("div.block") == null) return "";
-        return methodElement.selectFirst("div.block").html();
+    public @Nullable String getRawDescription() {
+        return rawDescription;
     }
 
     @Override
-    public @NotNull String getUrl() {
-        return methodUrl;
+    public @Nullable String getUrl() {
+        return url;
     }
 
-    public @NotNull HashMap<String, List<String>> getExtraInformation (boolean rawHtml) {
-        return Utilites.getExtraInformation(methodElement, rawHtml);
+    @Override
+    public @Nullable HashMap<String, List<String>> getExtraInformation() {
+        return extraInformation;
     }
 
-    public @NotNull Element getMethodElement() {
+    @Override
+    public @Nullable HashMap<String, List<String>> getRawExtraInformation() {
+        return rawExtraInformation;
+    }
+
+    public @Nullable ClassInformation getClassInfo() {
+        return classInfo;
+    }
+
+    public @Nullable Element getMethodElement() {
         return methodElement;
+    }
+
+    @Override
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
+    public void setNameWithParameters(@NotNull String nameWithParameters) {
+        this.nameWithParameters = nameWithParameters;
+    }
+
+    @Override
+    public void setDescription(@NotNull String description) {
+        this.description = description;
+    }
+
+    @Override
+    public void setRawDescription(@NotNull String rawDescription) {
+        this.rawDescription = rawDescription;
+    }
+
+    @Override
+    public void setUrl(@NotNull String url) {
+        this.url = url;
+    }
+
+    @Override
+    public void setExtraInformation(@NotNull HashMap<String, List<String>> extraInformation) {
+        this.extraInformation = extraInformation;
+    }
+
+    @Override
+    public void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation) {
+        this.rawExtraInformation = rawExtraInformation;
     }
 
     /**
@@ -96,7 +144,7 @@ public class MethodInformation implements Information {
 
         methodLinkList.forEach((name, url) -> {
             String check = name.substring(0, name.indexOf("("));
-            if(check.equalsIgnoreCase(methodName)) {
+            if (check.equalsIgnoreCase(methodName)) {
                 foundMethods.put(name, url);
             }
         });
@@ -119,7 +167,7 @@ public class MethodInformation implements Information {
                 .collect(Collectors.toList());
 
         int i = 0;
-        for(String url : foundMethods.values()) {
+        for (String url : foundMethods.values()) {
             methods.put(elementList.get(i), url);
             i++;
         }
@@ -142,6 +190,32 @@ public class MethodInformation implements Information {
         methods.forEach((element, url) -> methodInfoList.add(new MethodInformation(classInfo, element, url)));
 
         return methodInfoList;
+    }
+
+    @SuppressWarnings("Duplicates")
+    private void init() {
+        try {
+            name = methodElement.selectFirst("h4").text();
+
+            nameWithParameters = "";
+            for (Map.Entry<String, String> entrySet : classMethodLinkList.entrySet()) {
+                if (entrySet.getValue().equalsIgnoreCase(getUrl())) {
+                    nameWithParameters = entrySet.getKey();
+                }
+            }
+
+            if (methodElement.selectFirst("div.block") == null) {
+                description = "";
+                rawDescription = "";
+            } else {
+                description = methodElement.selectFirst("div.block").text();
+                rawDescription = methodElement.selectFirst("div.block").html();
+            }
+
+            extraInformation = Utilites.getExtraInformation(methodElement, false);
+            rawExtraInformation = Utilites.getExtraInformation(methodElement, true);
+        } catch (NullPointerException ignored) {
+        }
     }
 
 }

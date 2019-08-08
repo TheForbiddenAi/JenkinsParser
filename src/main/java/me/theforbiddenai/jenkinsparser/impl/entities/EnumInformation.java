@@ -3,6 +3,7 @@ package me.theforbiddenai.jenkinsparser.impl.entities;
 import me.theforbiddenai.jenkinsparser.Information;
 import me.theforbiddenai.jenkinsparser.impl.Utilites;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Element;
 
 import java.util.HashMap;
@@ -12,7 +13,26 @@ public class EnumInformation implements Information {
 
     private final ClassInformation classInfo;
     private final Element enumElement;
-    private final String enumUrl;
+
+    private String name;
+    private String description;
+    private String rawDescription;
+    private String url;
+
+    private HashMap<String, List<String>> extraInformation;
+    private HashMap<String, List<String>> rawExtraInformation;
+
+    public EnumInformation(@Nullable ClassInformation classInfo, @Nullable Element enumElement) {
+        this.classInfo = classInfo;
+        this.enumElement = enumElement;
+
+        init();
+        if (enumElement != null && classInfo != null) {
+            try {
+                this.url = classInfo.getUrl() + "#" + getName();
+            } catch (Exception ignored) {}
+        }
+    }
 
     public EnumInformation(ClassInformation classInfo, String enumName) {
         this.classInfo = classInfo;
@@ -23,39 +43,96 @@ public class EnumInformation implements Information {
         }
 
         this.enumElement = (Element) enumInfo.get(1);
-        this.enumUrl = (String) enumInfo.get(0);
+        this.url = (String) enumInfo.get(0);
 
     }
 
     @Override
-    public @NotNull String getName() {
-        return enumElement.selectFirst("h4").text();
+    public @Nullable String getName() {
+        return name;
     }
 
     @Override
-    public @NotNull String getDescription() {
-        if (enumElement.selectFirst("div.block") == null) return "";
-        return enumElement.selectFirst("div.block").text();
+    public @Nullable String getDescription() {
+        return description;
     }
 
     @Override
-    public @NotNull String getRawDescription() {
-        if (enumElement.selectFirst("div.block") == null) return "";
-        return enumElement.selectFirst("div.block").html();
+    public @Nullable String getRawDescription() {
+        return rawDescription;
     }
 
     @Override
-    public @NotNull String getUrl() {
-        return enumUrl;
+    public @Nullable String getUrl() {
+        return url;
     }
 
     @Override
-    public @NotNull HashMap<String, List<String>> getExtraInformation(boolean rawHtml) {
-        return Utilites.getExtraInformation(enumElement, rawHtml);
+    public @Nullable HashMap<String, List<String>> getExtraInformation() {
+        return extraInformation;
     }
 
-    public @NotNull Element getElement() {
+    @Override
+    public @Nullable HashMap<String, List<String>> getRawExtraInformation() {
+        return rawExtraInformation;
+    }
+
+    public @Nullable ClassInformation getClassInfo() {
+        return classInfo;
+    }
+
+    public @Nullable Element getElement() {
         return enumElement;
     }
+
+    @Override
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void setDescription(@NotNull String description) {
+        this.description = description;
+    }
+
+    @Override
+    public void setRawDescription(@NotNull String rawDescription) {
+        this.rawDescription = rawDescription;
+    }
+
+    @Override
+    public void setUrl(@NotNull String url) {
+        this.url = url;
+    }
+
+    @Override
+    public void setExtraInformation(@NotNull HashMap<String, List<String>> extraInformation) {
+        this.extraInformation = extraInformation;
+    }
+
+    @Override
+    public void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation) {
+        this.rawExtraInformation = rawExtraInformation;
+    }
+
+    @SuppressWarnings("Duplicates")
+    private void init() {
+        try {
+            name = enumElement.selectFirst("h4").text();
+
+            if (enumElement.selectFirst("div.block") == null) {
+                description = "";
+                rawDescription = "";
+            } else {
+                description = enumElement.selectFirst("div.block").text();
+                rawDescription = enumElement.selectFirst("div.block").html();
+            }
+
+            extraInformation = Utilites.getExtraInformation(enumElement, false);
+            rawExtraInformation = Utilites.getExtraInformation(enumElement, true);
+        } catch (NullPointerException ignored) {
+        }
+    }
+
 
 }
