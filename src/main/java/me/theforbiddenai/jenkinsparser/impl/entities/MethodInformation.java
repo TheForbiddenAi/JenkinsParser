@@ -25,6 +25,8 @@ public class MethodInformation implements Information {
     private String rawDescription;
     private String url;
 
+    private ArrayList<MethodInformation> methodList;
+
     private HashMap<String, List<String>> extraInformation;
     private HashMap<String, List<String>> rawExtraInformation;
 
@@ -88,6 +90,28 @@ public class MethodInformation implements Information {
         return rawExtraInformation;
     }
 
+    /**
+     * Gets all methods with the same name as the current name
+     *
+     * @return A list of methods that share the same name or null if none are found
+     */
+    public @Nullable ArrayList<MethodInformation> getAllMethods() {
+        if (methodList == null) {
+
+            HashMap<Element, String> methods = getMethods(getName());
+
+            if (methods != null) {
+                methodList = new ArrayList<>();
+                methods.forEach((element, url) -> methodList.add(new MethodInformation(classInfo, element, url)));
+
+            } else {
+                throw new NullPointerException("Couldn't find any methods with the specified name");
+            }
+        }
+
+        return methodList;
+    }
+
     public @Nullable ClassInformation getClassInfo() {
         return classInfo;
     }
@@ -128,6 +152,10 @@ public class MethodInformation implements Information {
     @Override
     public void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation) {
         this.rawExtraInformation = rawExtraInformation;
+    }
+
+    public void setMethodList(@NotNull ArrayList<MethodInformation> methodList) {
+        this.methodList = methodList;
     }
 
     /**
@@ -175,23 +203,6 @@ public class MethodInformation implements Information {
         return methods;
     }
 
-    /**
-     * Gets all methods with the same name as the current name
-     *
-     * @return A list of methods that share the same name or null if none are found
-     */
-    public List<MethodInformation> getAllMethods() {
-        HashMap<Element, String> methods = getMethods(getName());
-        if (methods == null) {
-            throw new NullPointerException("Couldn't find any methods with the specified name");
-        }
-
-        List<MethodInformation> methodInfoList = new ArrayList<>();
-        methods.forEach((element, url) -> methodInfoList.add(new MethodInformation(classInfo, element, url)));
-
-        return methodInfoList;
-    }
-
     @SuppressWarnings("Duplicates")
     private void init() {
         try {
@@ -214,6 +225,8 @@ public class MethodInformation implements Information {
 
             extraInformation = Utilites.getExtraInformation(methodElement, false);
             rawExtraInformation = Utilites.getExtraInformation(methodElement, true);
+
+
         } catch (NullPointerException ignored) {
         }
     }
