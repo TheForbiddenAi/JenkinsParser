@@ -27,8 +27,8 @@ public class MethodInformation implements Information {
 
     private ArrayList<MethodInformation> methodList;
 
-    private HashMap<String, List<String>> extraInformation;
-    private HashMap<String, List<String>> rawExtraInformation;
+    private HashMap<String, String> extraInformation;
+    private HashMap<String, String> rawExtraInformation;
 
     public MethodInformation(ClassInformation classInfo, String methodName) {
         methodName = methodName.contains("(") ? methodName.substring(0, methodName.indexOf("(")) : methodName;
@@ -81,12 +81,12 @@ public class MethodInformation implements Information {
     }
 
     @Override
-    public @Nullable HashMap<String, List<String>> getExtraInformation() {
+    public @Nullable HashMap<String, String> getExtraInformation() {
         return extraInformation;
     }
 
     @Override
-    public @Nullable HashMap<String, List<String>> getRawExtraInformation() {
+    public @Nullable HashMap<String, String> getRawExtraInformation() {
         return rawExtraInformation;
     }
 
@@ -145,12 +145,12 @@ public class MethodInformation implements Information {
     }
 
     @Override
-    public void setExtraInformation(@NotNull HashMap<String, List<String>> extraInformation) {
+    public void setExtraInformation(@NotNull HashMap<String, String> extraInformation) {
         this.extraInformation = extraInformation;
     }
 
     @Override
-    public void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation) {
+    public void setRawExtraInformation(@NotNull HashMap<String, String> rawExtraInformation) {
         this.rawExtraInformation = rawExtraInformation;
     }
 

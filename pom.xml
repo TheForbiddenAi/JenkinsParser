@@ -6,7 +6,14 @@
 
     <groupId>JenkinsParser</groupId>
     <artifactId>JenkinsParser</artifactId>
-    <version>RELEASE</version>
+    <version>RELEASE-v1.0.1</version>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
 
     <dependencies>
         <dependency>

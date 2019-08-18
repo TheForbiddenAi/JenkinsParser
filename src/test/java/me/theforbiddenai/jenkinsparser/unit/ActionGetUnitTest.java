@@ -52,8 +52,8 @@ public class ActionGetUnitTest {
         assertThat(methodInfoClassObject).isNotNull();
         assertThat(methodInfoClassName).isNotNull();
 
+        assertThat(methodInfoClassObject).isEqualTo(methodInfoClassName);
         assertThat(methodInfoClassObject.getName()).isEqualTo("testMethod");
-        assertThat(methodInfoClassName.getName()).isEqualTo("testMethod");
 
     }
 
@@ -73,8 +73,8 @@ public class ActionGetUnitTest {
         assertThat(enumInfoClassObject).isNotNull();
         assertThat(enumInfoClassName).isNotNull();
 
+        assertThat(enumInfoClassObject).isEqualTo(enumInfoClassName);
         assertThat(enumInfoClassObject.getName()).isEqualTo("testEnum");
-        assertThat(enumInfoClassName.getName()).isEqualTo("testEnum");
     }
 
     @Test
@@ -93,9 +93,8 @@ public class ActionGetUnitTest {
         assertThat(fieldInfoClassObject).isNotNull();
         assertThat(fieldInfoClassName).isNotNull();
 
+        assertThat(fieldInfoClassObject).isEqualTo(fieldInfoClassName);
         assertThat(fieldInfoClassObject.getName()).isEqualTo("testField");
-        assertThat(fieldInfoClassName.getName()).isEqualTo("testField");
     }
-
 
 }

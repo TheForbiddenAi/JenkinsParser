@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.List;
 
 public interface Information {
 
@@ -16,9 +15,9 @@ public interface Information {
 
     @Nullable String getUrl();
 
-    @Nullable HashMap<String, List<String>> getExtraInformation();
+    @Nullable HashMap<String, String> getExtraInformation();
 
-    @Nullable HashMap<String, List<String>> getRawExtraInformation();
+    @Nullable HashMap<String, String> getRawExtraInformation();
 
     void setName(@NotNull String name);
 
@@ -28,7 +27,7 @@ public interface Information {
 
     void setUrl(@NotNull String url);
 
-    void setExtraInformation(@NotNull HashMap<String, List<String>> extraInformation);
+    void setExtraInformation(@NotNull HashMap<String, String> extraInformation);
 
-    void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation);
+    void setRawExtraInformation(@NotNull HashMap<String, String> rawExtraInformation);
 }

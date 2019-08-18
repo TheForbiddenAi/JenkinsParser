@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -29,9 +28,9 @@ public class ClassGetUnitTest {
         ClassInformation mockClass = new ClassInformation("", null);
         mockClass.setName("testClass");
 
-        HashMap<String, List<String>> extraInfo = new HashMap<>();
-        extraInfo.put("header1", new ArrayList<>(Arrays.asList("info1", "info2")));
-        extraInfo.put("header2", new ArrayList<>(Arrays.asList("info1", "info2")));
+        HashMap<String, String> extraInfo = new HashMap<>();
+        extraInfo.put("header1", "info1");
+        extraInfo.put("header2", "info2");
 
         mockClass.setExtraInformation(extraInfo);
 
@@ -43,7 +42,7 @@ public class ClassGetUnitTest {
         assertThat(classInfo.getName()).isEqualTo("testClass");
         assertThat(classInfo.getExtraInformation()).isNotNull();
         assertThat(classInfo.getExtraInformation()).hasSize(2);
-        assertThat(classInfo.getExtraInformation().get("header1")).hasSize(2);
+        assertThat(classInfo.getExtraInformation().get("header1")).isEqualTo("info1");
     }
 
     @Test
@@ -51,9 +50,9 @@ public class ClassGetUnitTest {
         ClassInformation mockClass = new ClassInformation("", null);
         mockClass.setName("testClass");
 
-        HashMap<String, List<String>> rawExtraInfo = new HashMap<>();
-        rawExtraInfo.put("rawHeader1", new ArrayList<>(Arrays.asList("rawInfo1", "rawInfo2")));
-        rawExtraInfo.put("rawHeader2", new ArrayList<>(Arrays.asList("rawInfo1", "rawInfo2")));
+        HashMap<String, String> rawExtraInfo = new HashMap<>();
+        rawExtraInfo.put("rawHeader1", "rawInfo1");
+        rawExtraInfo.put("rawHeader2", "rawInfo2");
 
         mockClass.setRawExtraInformation(rawExtraInfo);
 
@@ -65,11 +64,11 @@ public class ClassGetUnitTest {
         assertThat(classInfo.getName()).isEqualTo("testClass");
         assertThat(classInfo.getRawExtraInformation()).isNotNull();
         assertThat(classInfo.getRawExtraInformation()).hasSize(2);
-        assertThat(classInfo.getRawExtraInformation().get("rawHeader1")).hasSize(2);
+        assertThat(classInfo.getRawExtraInformation().get("rawHeader1")).isEqualTo("rawInfo1");
     }
 
     @Test
-    public void testGetNestedClass() {
+    public void testGetNestedClasses() {
         ClassInformation mockClass = new ClassInformation("", null);
         mockClass.setName("testClass");
 

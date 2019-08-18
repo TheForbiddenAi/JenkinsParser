@@ -13,14 +13,13 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MiscGetUnitTests {
+public class MiscGetUnitTest {
 
     private static JenkinsImpl jenkins;
 
@@ -75,14 +74,15 @@ public class MiscGetUnitTests {
 
     /**
      * This method tests both the getExtraInformation and getRawExtraInformation methods
+     *
      * @param mockInfo The information object being tested
      */
     private void infoTest(Information mockInfo) {
         mockInfo.setName("test");
 
-        HashMap<String, List<String>> rawExtraInfo = new HashMap<>();
-        rawExtraInfo.put("rawHeader1", new ArrayList<>(Arrays.asList("rawInfo1", "rawInfo2")));
-        rawExtraInfo.put("rawHeader2", new ArrayList<>(Arrays.asList("rawInfo1", "rawInfo2")));
+        HashMap<String, String> rawExtraInfo = new HashMap<>();
+        rawExtraInfo.put("rawHeader1", "rawInfo1");
+        rawExtraInfo.put("rawHeader2", "rawInfo2");
 
         mockInfo.setRawExtraInformation(rawExtraInfo);
         mockInfo.setExtraInformation(rawExtraInfo);
@@ -96,11 +96,11 @@ public class MiscGetUnitTests {
 
         assertThat(info.getRawExtraInformation()).isNotNull();
         assertThat(info.getRawExtraInformation()).hasSize(2);
-        assertThat(info.getRawExtraInformation().get("rawHeader1")).hasSize(2);
+        assertThat(info.getRawExtraInformation().get("rawHeader1")).isEqualTo("rawInfo1");
 
         assertThat(info.getExtraInformation()).isNotNull();
         assertThat(info.getExtraInformation()).hasSize(2);
-        assertThat(info.getExtraInformation().get("rawHeader1")).hasSize(2);
+        assertThat(info.getExtraInformation().get("rawHeader2")).isEqualTo("rawInfo2");
     }
 
 }

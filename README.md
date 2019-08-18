@@ -13,7 +13,7 @@ A java api to easily parse jenkins javadocs
 <dependency>
     <groupId>com.github.TheForbiddenAi</groupId>
     <artifactId>JenkinsParser</artifactId>
-    <version>RELEASE</version>
+    <version>RELEASE-v1.0.1</version>
 </dependency>
   ```
 

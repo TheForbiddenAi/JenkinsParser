@@ -24,8 +24,8 @@ public class ClassInformation implements Information {
     private String rawDescription;
     private String url;
 
-    private HashMap<String, List<String>> extraInformation;
-    private HashMap<String, List<String>> rawExtraInformation;
+    private HashMap<String, String> extraInformation;
+    private HashMap<String, String> rawExtraInformation;
 
     private ArrayList<String> nestedClassList;
     private ArrayList<String> methodList;
@@ -72,12 +72,12 @@ public class ClassInformation implements Information {
     }
 
     @Override
-    public @Nullable HashMap<String, List<String>> getExtraInformation() {
+    public @Nullable HashMap<String, String> getExtraInformation() {
         return extraInformation;
     }
 
     @Override
-    public @Nullable HashMap<String, List<String>> getRawExtraInformation() {
+    public @Nullable HashMap<String, String> getRawExtraInformation() {
         return rawExtraInformation;
     }
 
@@ -126,12 +126,12 @@ public class ClassInformation implements Information {
     }
 
     @Override
-    public void setExtraInformation(@NotNull HashMap<String, List<String>> extraInformation) {
+    public void setExtraInformation(@NotNull HashMap<String, String> extraInformation) {
         this.extraInformation = extraInformation;
     }
 
     @Override
-    public void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation) {
+    public void setRawExtraInformation(@NotNull HashMap<String, String> rawExtraInformation) {
         this.rawExtraInformation = rawExtraInformation;
     }
 
@@ -189,7 +189,11 @@ public class ClassInformation implements Information {
         Element blocklist = aElement.parent();
 
         Element tableBody = blocklist.selectFirst("tbody");
-        String columnToGet = tableBody.selectFirst("tr").selectFirst("th.colSecond") != null ? "th.colSecond" : "td.colLast";
+
+        Element firstTr = tableBody.selectFirst("tr");
+        String columnToGet = listName.equalsIgnoreCase("enum.constant.summary") ?
+                (firstTr.selectFirst("th.colFirst") != null ? "th.colFirst" : "td.colOne") :
+                (firstTr.selectFirst("th.colSecond") != null ? "th.colSecond" : "td.colLast");
 
         ArrayList<String> methodList = new ArrayList<>();
         tableBody.select("tr").stream()
@@ -225,9 +229,11 @@ public class ClassInformation implements Information {
 
         Element tableBody = blocklist.selectFirst("tbody");
 
+        Element firstTr = tableBody.selectFirst("tr");
         String columnToGet = listName.equalsIgnoreCase("enum.constant.summary") ?
-                (tableBody.selectFirst("tr").selectFirst("th.colFirst") != null ? "th.colFirst" : "td.colOne") :
-                (tableBody.selectFirst("tr").selectFirst("th.colSecond") != null ? "th.colSecond" : "td.colLast");
+                (firstTr.selectFirst("th.colFirst") != null ? "th.colFirst" : "td.colOne") :
+                (firstTr.selectFirst("th.colSecond") != null ? "th.colSecond" : "td.colLast");
+
 
         HashMap<String, String> methodList = new HashMap<>();
         tableBody.select("tr").stream()

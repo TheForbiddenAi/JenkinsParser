@@ -19,8 +19,8 @@ public class EnumInformation implements Information {
     private String rawDescription;
     private String url;
 
-    private HashMap<String, List<String>> extraInformation;
-    private HashMap<String, List<String>> rawExtraInformation;
+    private HashMap<String, String> extraInformation;
+    private HashMap<String, String> rawExtraInformation;
 
     public EnumInformation(@Nullable ClassInformation classInfo, @Nullable Element enumElement) {
         this.classInfo = classInfo;
@@ -44,6 +44,7 @@ public class EnumInformation implements Information {
 
         this.enumElement = (Element) enumInfo.get(1);
         this.url = (String) enumInfo.get(0);
+        init();
 
     }
 
@@ -68,12 +69,12 @@ public class EnumInformation implements Information {
     }
 
     @Override
-    public @Nullable HashMap<String, List<String>> getExtraInformation() {
+    public @Nullable HashMap<String, String> getExtraInformation() {
         return extraInformation;
     }
 
     @Override
-    public @Nullable HashMap<String, List<String>> getRawExtraInformation() {
+    public @Nullable HashMap<String, String> getRawExtraInformation() {
         return rawExtraInformation;
     }
 
@@ -106,12 +107,12 @@ public class EnumInformation implements Information {
     }
 
     @Override
-    public void setExtraInformation(@NotNull HashMap<String, List<String>> extraInformation) {
+    public void setExtraInformation(@NotNull HashMap<String, String> extraInformation) {
         this.extraInformation = extraInformation;
     }
 
     @Override
-    public void setRawExtraInformation(@NotNull HashMap<String, List<String>> rawExtraInformation) {
+    public void setRawExtraInformation(@NotNull HashMap<String, String> rawExtraInformation) {
         this.rawExtraInformation = rawExtraInformation;
     }
 

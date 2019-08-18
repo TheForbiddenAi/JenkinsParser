@@ -55,18 +55,18 @@ public class Utilites {
         return info;
     }
 
-    public static @NotNull HashMap<String, List<String>> getExtraInformation (Element element, boolean rawHtml) {
-        HashMap<String, List<String>> extraInfo = new HashMap<>();
+    public static @NotNull HashMap<String, String> getExtraInformation (Element element, boolean rawHtml) {
+        HashMap<String, String> extraInfo = new HashMap<>();
 
         element.select("dl").select("dt").forEach(label -> {
             Element nextElement = label.nextElementSibling();
-            List<String> info = new ArrayList<>();
+            StringBuilder infoBuilder = new StringBuilder();
             while(nextElement != null && nextElement.nodeName().equals("dd")) {
-                info.add(rawHtml ? nextElement.html() : nextElement.text());
+                infoBuilder.append(rawHtml ? nextElement.html() : nextElement.text());
                 nextElement = nextElement.nextElementSibling();
             }
 
-            extraInfo.put(label.text(), info);
+            extraInfo.put(label.text(), infoBuilder.toString().trim());
         });
 
 
