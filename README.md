@@ -2,18 +2,16 @@
 A java api to easily parse jenkins javadocs
 ## Usage
 ### Maven Dependency
-```
-<repositories>
-	<repository>
-	    <id>jitpack.io</id>
-	    <url>https://jitpack.io</url>
-	</repository>
-</repositories>
+```xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
   
 <dependency>
     <groupId>com.github.TheForbiddenAi</groupId>
     <artifactId>JenkinsParser</artifactId>
-    <version>RELEASE-v1.0.1</version>
+    <version>v1.0.1</version>
 </dependency>
   ```
 
