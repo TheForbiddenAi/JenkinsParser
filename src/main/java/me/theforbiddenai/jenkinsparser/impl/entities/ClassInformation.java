@@ -262,7 +262,8 @@ public class ClassInformation implements Information {
                     String methodName = column.text();
 
                     String href = column.selectFirst("a").attr("href").replace("../", "");
-                    String url = baseUrl + href;
+                    String url = (href.startsWith("#") ? getUrl() : baseUrl) + href;
+
                     methodList.put(methodName, url);
                 });
 
