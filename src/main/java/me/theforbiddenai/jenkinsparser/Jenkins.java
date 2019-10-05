@@ -10,9 +10,11 @@ import java.util.List;
 
 public interface Jenkins {
 
-    Information search(String query);
+    List<Information> search(String query);
 
     ClassInformation getClass(String className);
+
+    List<ClassInformation> searchClasses(String className);
 
     MethodInformation getMethod(String className, String methodName);
 

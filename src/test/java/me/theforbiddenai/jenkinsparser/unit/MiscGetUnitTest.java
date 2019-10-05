@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -87,9 +88,12 @@ public class MiscGetUnitTest {
         mockInfo.setRawExtraInformation(rawExtraInfo);
         mockInfo.setExtraInformation(rawExtraInfo);
 
-        when(jenkins.search(anyString())).thenReturn(mockInfo);
+        List<Information> mockInfoList = new ArrayList<>();
+        mockInfoList.add(mockInfo);
 
-        Information info = jenkins.search("test");
+        when(jenkins.search(anyString())).thenReturn(mockInfoList);
+
+        Information info = jenkins.search("test").get(0);
 
         assertThat(info).isNotNull();
         assertThat(info.getName()).isEqualTo("test");

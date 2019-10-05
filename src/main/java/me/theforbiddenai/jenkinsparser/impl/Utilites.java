@@ -1,5 +1,6 @@
 package me.theforbiddenai.jenkinsparser.impl;
 
+import me.theforbiddenai.jenkinsparser.Information;
 import me.theforbiddenai.jenkinsparser.impl.entities.ClassInformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +56,12 @@ public class Utilites {
         return info;
     }
 
+    /**
+     * Gets the extra information from the specified element
+     * @param element The element the extra info is coming from
+     * @param rawHtml Whether or not to return the extra info in raw html
+     * @return A hashmap containing the extra info for the element
+     */
     public static @NotNull HashMap<String, String> getExtraInformation (Element element, boolean rawHtml) {
         HashMap<String, String> extraInfo = new HashMap<>();
 
@@ -71,6 +78,22 @@ public class Utilites {
 
 
         return extraInfo;
+    }
+
+    /**
+     * Converts Class/Enum/Field/Method Info lists to an Info List
+     * @param listToConvert The list being converted
+     * @param <T> The type of the list
+     * @return The converted list
+     */
+    static @NotNull <T> List<Information> convertList(List<T> listToConvert) {
+        List<Information> convertedList = new ArrayList<>();
+
+        listToConvert.forEach(info -> {
+            convertedList.add((Information) info);
+        });
+
+        return convertedList;
     }
 
 }

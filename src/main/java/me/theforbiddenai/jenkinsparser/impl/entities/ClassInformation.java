@@ -18,6 +18,7 @@ public class ClassInformation implements Information {
 
     private Document classDocument;
     private final String baseUrl;
+    private final List<Document> classDocumentList;
 
     private String name;
     private String description;
@@ -33,9 +34,16 @@ public class ClassInformation implements Information {
     private ArrayList<String> enumList;
     private ArrayList<String> fieldList;
 
+    private List<ClassInformation> allFoundClasses;
+
     public ClassInformation(String baseUrl, @Nullable Document classDocument) {
         this.baseUrl = baseUrl;
         this.classDocument = classDocument;
+
+        List<Document> classDocList = new ArrayList<>();
+        classDocList.add(classDocument);
+
+        classDocumentList = classDocList;
 
         init();
     }
@@ -43,10 +51,12 @@ public class ClassInformation implements Information {
     public ClassInformation(String baseUrl, ArrayList<Element> classList, String className) {
         this.baseUrl = baseUrl;
 
-        classDocument = retrieveClass(classList, className);
-        if (classDocument == null) {
+        classDocumentList = retrieveClasses(classList, className);
+
+        if(classDocumentList == null || classDocumentList.size() == 0) {
             throw new NullPointerException("Class not found!");
         }
+        classDocument = retrieveClasses(classList, className).get(0);
 
         init();
     }
@@ -99,6 +109,15 @@ public class ClassInformation implements Information {
 
     public @Nullable ArrayList<String> getFieldList() {
         return fieldList;
+    }
+
+    public @NotNull List<ClassInformation> getAllClasses() {
+        if(allFoundClasses.size() == 0) {
+            classDocumentList.forEach(document -> {
+                allFoundClasses.add(new ClassInformation(baseUrl, document));
+            });
+        }
+        return allFoundClasses;
     }
 
     public @Nullable Document getClassDocument() {
@@ -255,10 +274,11 @@ public class ClassInformation implements Information {
      *
      * @param classList The element list containing all of the class (does not contain nested classes)
      * @param className The name of the class being searched for
-     * @return The document for the class or null if none is found
+     * @return The list of documents for all found classes with the specified name or null if none is found
      */
-    private @Nullable Document retrieveClass(ArrayList<Element> classList, String className) {
+    private @Nullable List<Document> retrieveClasses(ArrayList<Element> classList, String className) {
 
+        List<Document> foundClasses = new ArrayList<>();
         List<Element> elementList = classList.stream()
                 .filter(element -> element.text().equalsIgnoreCase(className.replace("#", ".")))
                 .collect(Collectors.toList());
@@ -296,11 +316,15 @@ public class ClassInformation implements Information {
                 }
             }
 
-            return classDocument;
+            foundClasses.add(classDocument);
         } else {
             if (elementList.size() == 0) return null;
-            return getDocument(baseUrl + elementList.get(0).selectFirst("a").attr("href"));
+
+            for(Element element : elementList) {
+                foundClasses.add(getDocument(baseUrl + element.selectFirst("a").attr("href")));
+            }
         }
+        return foundClasses;
 
     }
 
@@ -336,6 +360,8 @@ public class ClassInformation implements Information {
             methodListWithParams = getList("method.summary", true);
             enumList = getList("enum.constant.summary", false);
             fieldList = getList("field.summary", false);
+
+            allFoundClasses = new ArrayList<>();
         } catch (NullPointerException ignored) {
         }
 

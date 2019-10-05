@@ -95,4 +95,15 @@ public class ClassGetIntegrationTest {
         assertThat(classInfo.getFieldList().get(0)).isEqualTo("CASE_INSENSITIVE_ORDER");
     }
 
+    @Test
+    public void testGetClasses() {
+        ClassInformation classInfo = jenkins.getClass("Object");
+
+        assertThat(classInfo).isNotNull();
+        assertThat(classInfo.getName()).isEqualTo("Class Object");
+        assertThat(classInfo.getAllClasses()).isNotNull();
+        assertThat(classInfo.getAllClasses()).hasSize(2);
+        assertThat(classInfo.getAllClasses().get(1).getName()).isEqualTo("Interface Object");
+    }
+
 }

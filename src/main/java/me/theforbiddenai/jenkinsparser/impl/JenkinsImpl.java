@@ -15,11 +15,14 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JenkinsImpl implements Jenkins {
 
     private String baseURL;
     private ArrayList<Element> classList;
+    private Cache CACHE = new Cache();
 
     // URL must be a link to the class list
     public JenkinsImpl(@NotNull String url) {
@@ -31,36 +34,46 @@ public class JenkinsImpl implements Jenkins {
 
     /**
      * Gets the requested information based on the search query
+     *
      * @param query The search query
-     * @return The found information based on the search query or null
+     * @return A list of found information based on the search query or null
      */
-    public Information search(String query) {
+    @Override
+    public List<Information> search(String query) {
 
-        if(query.length() == 0) throw new Error("Invalid query!");
+        if (query.length() == 0) throw new Error("Invalid query!");
 
         query = query.replace("#", ".");
         query = query.endsWith(".") ? query.substring(0, query.length() - 1) : query;
 
         try {
-            return getClass(query);
-        } catch (NullPointerException ignored) {}
+            return Utilites.convertList(searchClasses(query));
+        } catch (NullPointerException ignored) {
+        }
 
         String className = query.contains(".") ? query.substring(0, query.lastIndexOf(".")) : query;
         String objectName = query.contains(".") ? query.substring(query.lastIndexOf(".") + 1) : null;
 
         ClassInformation classInfo = getClass(className);
-        if(objectName != null) {
+        if (objectName != null) {
             try {
-                return getMethod(classInfo, objectName);
-            } catch (NullPointerException ignored) {}
+                return Utilites.convertList(searchMethods(classInfo, objectName));
+            } catch (NullPointerException ignored) {
+            }
+
+            List<Information> infoList = new ArrayList<>();
 
             try {
-                return getEnum(classInfo, objectName);
-            } catch (NullPointerException ignored) {}
+                infoList.add(getEnum(classInfo, objectName));
+                return infoList;
+            } catch (NullPointerException ignored) {
+            }
 
             try {
-                return getField(classInfo, objectName);
-            } catch (NullPointerException ignored) {}
+                infoList.add(getField(classInfo, objectName));
+                return infoList;
+            } catch (NullPointerException ignored) {
+            }
 
             throw new NullPointerException("Couldn't find the specified query!");
         }
@@ -69,14 +82,34 @@ public class JenkinsImpl implements Jenkins {
     }
 
     /**
-     * Gets the class with the specified name
+     * Gets the first class with the specified name
      *
      * @param className The name of the class being searched for
      * @return The class information object or null if none are found
      */
     @Override
     public ClassInformation getClass(String className) {
-        return new ClassInformation(baseURL, classList, className);
+
+        ClassInformation classInfo = (ClassInformation) CACHE.getInformation(className);
+        if (classInfo != null) {
+            return classInfo;
+        }
+
+        classInfo = new ClassInformation(baseURL, classList, className);
+        CACHE.insertInformation(className, classInfo);
+
+        return classInfo;
+    }
+
+    /**
+     * Gets all classes with the specified name
+     *
+     * @param className The name of the classes being searched for
+     * @return A list of class information for all found classes or null if none are found
+     */
+    @Override
+    public List<ClassInformation> searchClasses(String className) {
+        return getClass(className).getAllClasses();
     }
 
     /**
@@ -100,11 +133,19 @@ public class JenkinsImpl implements Jenkins {
      */
     @Override
     public MethodInformation getMethod(ClassInformation classInfo, String methodName) {
-        return new MethodInformation(classInfo, methodName);
+        MethodInformation methodInfo = (MethodInformation) CACHE.getInformation(classInfo.getName() + "." + methodName);
+        if (methodInfo != null) {
+            return methodInfo;
+        }
+
+        methodInfo = new MethodInformation(classInfo, methodName);
+        CACHE.insertInformation(classInfo.getName() + "." + methodName, methodInfo);
+
+        return methodInfo;
     }
 
     /**
-     * Returns a list of all methods in the class which have the specified method name
+     * Gets a list of all methods in the class which have the specified method name
      *
      * @param className  The class name for the class the method(s) are being searched for in
      * @param methodName The method(s) being searched for
@@ -112,11 +153,11 @@ public class JenkinsImpl implements Jenkins {
      */
     @Override
     public List<MethodInformation> searchMethods(String className, String methodName) {
-        return new MethodInformation(getClass(className), methodName).getAllMethods();
+        return searchMethods(getClass(className), methodName);
     }
 
     /**
-     * Returns a list of all methods in the class which have the specified method name
+     * Gets a list of all methods in the class which have the specified method name
      *
      * @param classInfo  The class information object for the class the method(s) are being searched for in
      * @param methodName The method(s) being searched for
@@ -124,11 +165,11 @@ public class JenkinsImpl implements Jenkins {
      */
     @Override
     public List<MethodInformation> searchMethods(ClassInformation classInfo, String methodName) {
-        return new MethodInformation(classInfo, methodName).getAllMethods();
+        return getMethod(classInfo, methodName).getAllMethods();
     }
 
     /**
-     * Returns the enum info with the specified name in the specified class
+     * Gets the enum info with the specified name in the specified class
      *
      * @param className The class name for the enum is being searched for in
      * @param enumName  The enum being searched for
@@ -148,17 +189,47 @@ public class JenkinsImpl implements Jenkins {
      */
     @Override
     public EnumInformation getEnum(ClassInformation classInfo, String enumName) {
-        return new EnumInformation(classInfo, enumName);
+        EnumInformation enumInfo = (EnumInformation) CACHE.getInformation(classInfo.getName() + "." + enumName);
+        if (enumInfo != null) {
+            return enumInfo;
+        }
+
+        enumInfo = new EnumInformation(classInfo, enumName);
+        CACHE.insertInformation(classInfo.getName() + "." + enumName, enumInfo);
+
+        return enumInfo;
     }
 
+    /**
+     * Gets the field info with the specified name in the specified class
+     *
+     * @param className The name of the class the field is being searched for it
+     * @param fieldName The name of the field being searched for
+     * @return
+     */
     @Override
     public FieldInformation getField(String className, String fieldName) {
         return getField(getClass(className), fieldName);
     }
 
+    /**
+     * Gets the field info with the specified name in the specified class
+     *
+     * @param classInfo The class information for the class the field in
+     * @param fieldName The name of the field being searched for
+     * @return
+     */
     @Override
     public FieldInformation getField(ClassInformation classInfo, String fieldName) {
-        return new FieldInformation(classInfo, fieldName);
+        FieldInformation fieldInfo = (FieldInformation) CACHE.getInformation(classInfo.getName() + "." + fieldName);
+        if (fieldInfo != null) {
+            return fieldInfo;
+        }
+
+        fieldInfo = new FieldInformation(classInfo, fieldName);
+        CACHE.insertInformation(classInfo.getName() + "." + fieldName, fieldInfo);
+
+        return fieldInfo;
     }
 
     /**
@@ -200,5 +271,18 @@ public class JenkinsImpl implements Jenkins {
         baseURL = url.substring(0, url.lastIndexOf("/") + 1);
     }
 
+    private static final class Cache {
 
+        private final Map<String, Information> informationCache = new ConcurrentHashMap<>();
+
+        @Nullable
+        Information getInformation(@NotNull String name) {
+            return informationCache.get(name.toLowerCase());
+        }
+
+        void insertInformation(@NotNull String name, @NotNull Information info) {
+            informationCache.put(name.toLowerCase(), info);
+        }
+
+    }
 }

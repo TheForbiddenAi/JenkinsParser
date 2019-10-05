@@ -157,5 +157,4 @@ public class ClassGetUnitTest {
         assertThat(classInfo.getFieldList()).hasSize(2);
     }
 
-
 }
