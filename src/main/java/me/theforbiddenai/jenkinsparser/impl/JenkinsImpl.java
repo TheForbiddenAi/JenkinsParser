@@ -49,29 +49,33 @@ public class JenkinsImpl implements Jenkins {
         List<Information> infoList = new ArrayList<>();
         try {
             infoList.addAll(Utilites.convertList(searchClasses(query)));
-        } catch (NullPointerException ignored) {}
+        } catch (NullPointerException ignored) {
+        }
 
         String className = query.contains(".") ? query.substring(0, query.lastIndexOf(".")) : query;
         String objectName = query.contains(".") ? query.substring(query.lastIndexOf(".") + 1) : null;
 
 
-            if (objectName != null) {
+        if (objectName != null) {
 
-                ClassInformation classInfo = getClass(className);
+            ClassInformation classInfo = getClass(className);
 
-                try {
-                    infoList.addAll(Utilites.convertList(searchMethods(classInfo, objectName)));
-                } catch (NullPointerException ignored) {}
-
-                try {
-                    infoList.add(getEnum(classInfo, objectName));
-                } catch (NullPointerException ignored) {}
-
-                try {
-                    infoList.add(getField(classInfo, objectName));
-                } catch (NullPointerException ignored) {}
-
+            try {
+                infoList.addAll(Utilites.convertList(searchMethods(classInfo, objectName)));
+            } catch (NullPointerException ignored) {
             }
+
+            try {
+                infoList.add(getEnum(classInfo, objectName));
+            } catch (NullPointerException ignored) {
+            }
+
+            try {
+                infoList.add(getField(classInfo, objectName));
+            } catch (NullPointerException ignored) {
+            }
+
+        }
 
         if (infoList.size() == 0) {
             throw new NullPointerException("Couldn't find the specified query!");

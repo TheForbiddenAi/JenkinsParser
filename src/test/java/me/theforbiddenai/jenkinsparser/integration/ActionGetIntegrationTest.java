@@ -17,7 +17,7 @@ public class ActionGetIntegrationTest {
     private static JenkinsImpl jenkins;
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws Exception {
         jenkins = new JenkinsImpl(JENKINS_URL);
     }
 
