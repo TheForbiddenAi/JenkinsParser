@@ -25,7 +25,7 @@ public class JenkinsImpl implements Jenkins {
     private Cache CACHE = new Cache();
 
     // URL must be a link to the class list
-    public JenkinsImpl(@NotNull String url) {
+    public JenkinsImpl(@NotNull String url) throws Exception {
         url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
 
         classList = getClassList(url);
@@ -253,7 +253,7 @@ public class JenkinsImpl implements Jenkins {
      * @return The class list
      */
     @Nullable
-    private ArrayList<Element> getClassList(@NotNull String classListURL) {
+    private ArrayList<Element> getClassList(@NotNull String classListURL) throws Exception {
         ArrayList<Element> classList = new ArrayList<>();
         try {
             Document classListDoc = Jsoup.connect(classListURL).get();
@@ -262,12 +262,11 @@ public class JenkinsImpl implements Jenkins {
                     .filter(element -> element.selectFirst("a") != null)
                     .forEach(classList::add);
         } catch (IOException | NullPointerException | IllegalArgumentException ex) {
-            ex.printStackTrace();
-            throw new Error("Invalid jenkins url!");
+            throw new Exception("Invalid jenkins url!");
         }
 
         if (classList.size() == 0) {
-            throw new Error("Unable to from the given jenkins url!");
+            throw new Exception("Unable to from the given jenkins url!");
         }
 
         return classList;
@@ -278,7 +277,7 @@ public class JenkinsImpl implements Jenkins {
      *
      * @param url The new url
      */
-    public void setJenkinsUrl(@NotNull String url) {
+    public void setJenkinsUrl(@NotNull String url) throws Exception {
         url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
 
         classList = getClassList(url);

@@ -32,6 +32,6 @@ public interface Jenkins {
 
     FieldInformation getField(ClassInformation classInfo, String fieldName);
 
-    void setJenkinsUrl(@NotNull String url);
+    void setJenkinsUrl(@NotNull String url) throws Exception;
 
 }
