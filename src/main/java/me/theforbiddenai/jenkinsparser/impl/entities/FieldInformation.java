@@ -26,7 +26,9 @@ public class FieldInformation implements Information {
         this.classInfo = classInfo;
         this.fieldElement = fieldElement;
 
-        init();
+        try {
+            init();
+        } catch (Exception ignored) {}
         if (fieldElement != null && classInfo != null) {
             try {
                 this.url = classInfo.getUrl() + "#" + getName();
@@ -120,21 +122,18 @@ public class FieldInformation implements Information {
 
     @SuppressWarnings("Duplicates")
     private void init() {
-        try {
-            name = fieldElement.selectFirst("h4").text();
+        name = fieldElement.selectFirst("h4").text();
 
-            if (fieldElement.selectFirst("div.block") == null) {
-                description = "";
-                rawDescription = "";
-            } else {
-                description = fieldElement.selectFirst("div.block").text();
-                rawDescription = fieldElement.selectFirst("div.block").html();
-            }
-
-            extraInformation = Utilites.getExtraInformation(fieldElement, false);
-            rawExtraInformation = Utilites.getExtraInformation(fieldElement, true);
-        } catch (NullPointerException ignored) {
+        if (fieldElement.selectFirst("div.block") == null) {
+            description = "";
+            rawDescription = "";
+        } else {
+            description = fieldElement.selectFirst("div.block").text();
+            rawDescription = fieldElement.selectFirst("div.block").html();
         }
+
+        extraInformation = Utilites.getExtraInformation(fieldElement, false);
+        rawExtraInformation = Utilites.getExtraInformation(fieldElement, true);
     }
 
 }

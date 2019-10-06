@@ -42,7 +42,6 @@ public class MethodInformation implements Information {
 
             init();
         } catch (NullPointerException | IndexOutOfBoundsException ex) {
-            ex.printStackTrace();
             throw new NullPointerException("Couldn't find the specified method!");
         }
     }
@@ -53,7 +52,9 @@ public class MethodInformation implements Information {
         this.methodElement = methodElement;
         this.url = methodUrl;
 
-        init();
+        try {
+            init();
+        } catch (Exception ignored) {}
     }
 
     @Override
@@ -205,30 +206,25 @@ public class MethodInformation implements Information {
 
     @SuppressWarnings("Duplicates")
     private void init() {
-        try {
-            name = methodElement.selectFirst("h4").text();
+        name = methodElement.selectFirst("h4").text();
 
-            nameWithParameters = "";
-            for (Map.Entry<String, String> entrySet : classMethodLinkList.entrySet()) {
-                if (entrySet.getValue().equalsIgnoreCase(getUrl())) {
-                    nameWithParameters = entrySet.getKey();
-                }
+        nameWithParameters = "";
+        for (Map.Entry<String, String> entrySet : classMethodLinkList.entrySet()) {
+            if (entrySet.getValue().equalsIgnoreCase(getUrl())) {
+                nameWithParameters = entrySet.getKey();
             }
-
-            if (methodElement.selectFirst("div.block") == null) {
-                description = "";
-                rawDescription = "";
-            } else {
-                description = methodElement.selectFirst("div.block").text();
-                rawDescription = methodElement.selectFirst("div.block").html();
-            }
-
-            extraInformation = Utilites.getExtraInformation(methodElement, false);
-            rawExtraInformation = Utilites.getExtraInformation(methodElement, true);
-
-
-        } catch (NullPointerException ignored) {
         }
+
+        if (methodElement.selectFirst("div.block") == null) {
+            description = "";
+            rawDescription = "";
+        } else {
+            description = methodElement.selectFirst("div.block").text();
+            rawDescription = methodElement.selectFirst("div.block").html();
+        }
+
+        extraInformation = Utilites.getExtraInformation(methodElement, false);
+        rawExtraInformation = Utilites.getExtraInformation(methodElement, true);
     }
 
 }

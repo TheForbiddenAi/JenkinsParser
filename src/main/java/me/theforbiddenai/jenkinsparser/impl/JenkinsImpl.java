@@ -48,7 +48,8 @@ public class JenkinsImpl implements Jenkins {
 
         try {
             return Utilites.convertList(searchClasses(query));
-        } catch (NullPointerException ignored) {
+        } catch (Exception ex) {
+
         }
 
         String className = query.contains(".") ? query.substring(0, query.lastIndexOf(".")) : query;

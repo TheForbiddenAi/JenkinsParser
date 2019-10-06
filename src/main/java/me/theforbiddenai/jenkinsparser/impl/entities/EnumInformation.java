@@ -26,11 +26,14 @@ public class EnumInformation implements Information {
         this.classInfo = classInfo;
         this.enumElement = enumElement;
 
-        init();
+        try {
+            init();
+        } catch (Exception ignored) {}
         if (enumElement != null && classInfo != null) {
             try {
                 this.url = classInfo.getUrl() + "#" + getName();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -118,21 +121,18 @@ public class EnumInformation implements Information {
 
     @SuppressWarnings("Duplicates")
     private void init() {
-        try {
-            name = enumElement.selectFirst("h4").text();
+        name = enumElement.selectFirst("h4").text();
 
-            if (enumElement.selectFirst("div.block") == null) {
-                description = "";
-                rawDescription = "";
-            } else {
-                description = enumElement.selectFirst("div.block").text();
-                rawDescription = enumElement.selectFirst("div.block").html();
-            }
-
-            extraInformation = Utilites.getExtraInformation(enumElement, false);
-            rawExtraInformation = Utilites.getExtraInformation(enumElement, true);
-        } catch (NullPointerException ignored) {
+        if (enumElement.selectFirst("div.block") == null) {
+            description = "";
+            rawDescription = "";
+        } else {
+            description = enumElement.selectFirst("div.block").text();
+            rawDescription = enumElement.selectFirst("div.block").html();
         }
+
+        extraInformation = Utilites.getExtraInformation(enumElement, false);
+        rawExtraInformation = Utilites.getExtraInformation(enumElement, true);
     }
 
 

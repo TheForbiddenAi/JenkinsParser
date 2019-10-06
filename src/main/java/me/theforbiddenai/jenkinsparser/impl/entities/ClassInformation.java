@@ -45,18 +45,20 @@ public class ClassInformation implements Information {
 
         classDocumentList = classDocList;
 
-        init();
+        try {
+            init();
+        } catch (Exception ignored) {}
     }
 
     public ClassInformation(String baseUrl, ArrayList<Element> classList, String className) {
         this.baseUrl = baseUrl;
 
-        classDocumentList = retrieveClasses(classList, className);
-
-        if(classDocumentList == null || classDocumentList.size() == 0) {
+        try {
+            classDocumentList = retrieveClasses(classList, className);
+            classDocument = retrieveClasses(classList, className).get(0);
+        } catch (Exception ex) {
             throw new NullPointerException("Class not found!");
         }
-        classDocument = retrieveClasses(classList, className).get(0);
 
         init();
     }
@@ -112,7 +114,7 @@ public class ClassInformation implements Information {
     }
 
     public @NotNull List<ClassInformation> getAllClasses() {
-        if(allFoundClasses.size() == 0) {
+        if (allFoundClasses.size() == 0) {
             classDocumentList.forEach(document -> {
                 allFoundClasses.add(new ClassInformation(baseUrl, document));
             });
@@ -199,34 +201,38 @@ public class ClassInformation implements Information {
      * @return An ArrayList containing the item name or null if the list is not found
      */
     private @Nullable ArrayList<String> getList(String listName, boolean withParams) {
-        // This is the element that is inside the blocklist which contains the table
-        Element aElement = classDocument.selectFirst("a[name=" + listName + "]");
-        if (aElement == null) aElement = classDocument.selectFirst("a[id=" + listName + "]");
-        if (aElement == null) return null;
+        try {
+            // This is the element that is inside the blocklist which contains the table
+            Element aElement = classDocument.selectFirst("a[name=" + listName + "]");
+            if (aElement == null) aElement = classDocument.selectFirst("a[id=" + listName + "]");
+            if (aElement == null) return null;
 
-        // This is the element that contains the table
-        Element blocklist = aElement.parent();
+            // This is the element that contains the table
+            Element blocklist = aElement.parent();
 
-        Element tableBody = blocklist.selectFirst("tbody");
+            Element tableBody = blocklist.selectFirst("tbody");
 
-        Element firstTr = tableBody.selectFirst("tr");
-        String columnToGet = listName.equalsIgnoreCase("enum.constant.summary") ?
-                (firstTr.selectFirst("th.colFirst") != null ? "th.colFirst" : "td.colOne") :
-                (firstTr.selectFirst("th.colSecond") != null ? "th.colSecond" : "td.colLast");
+            Element firstTr = tableBody.selectFirst("tr");
+            String columnToGet = listName.equalsIgnoreCase("enum.constant.summary") ?
+                    (firstTr.selectFirst("th.colFirst") != null ? "th.colFirst" : "td.colOne") :
+                    (firstTr.selectFirst("th.colSecond") != null ? "th.colSecond" : "td.colLast");
 
-        ArrayList<String> methodList = new ArrayList<>();
-        tableBody.select("tr").stream()
-                .filter(element -> element.selectFirst("td") != null)
-                .forEach(tableRow -> {
-                    String methodName = tableRow.selectFirst(columnToGet).text();
+            ArrayList<String> methodList = new ArrayList<>();
+            tableBody.select("tr").stream()
+                    .filter(element -> element.selectFirst("td") != null)
+                    .forEach(tableRow -> {
+                        String methodName = tableRow.selectFirst(columnToGet).text();
 
-                    if (!withParams && methodName.contains("(")) {
-                        methodName = methodName.substring(0, methodName.indexOf("("));
-                    }
+                        if (!withParams && methodName.contains("(")) {
+                            methodName = methodName.substring(0, methodName.indexOf("("));
+                        }
 
-                    methodList.add(methodName);
-                });
-        return methodList;
+                        methodList.add(methodName);
+                    });
+            return methodList;
+        } catch (NullPointerException ex) {
+            return null;
+        }
     }
 
     /**
@@ -304,7 +310,6 @@ public class ClassInformation implements Information {
             for (int i = 1; i < queryArgs.length; i++) {
                 for (String name : nestedClassList.keySet()) {
 
-                    classDocument = null;
                     if (name.equalsIgnoreCase(nestName.toString() + "." + queryArgs[i])) {
                         String url = nestedClassList.get(name);
                         classDocument = getDocument(url);
@@ -321,7 +326,7 @@ public class ClassInformation implements Information {
         } else {
             if (elementList.size() == 0) return null;
 
-            for(Element element : elementList) {
+            for (Element element : elementList) {
                 foundClasses.add(getDocument(baseUrl + element.selectFirst("a").attr("href")));
             }
         }
@@ -339,33 +344,28 @@ public class ClassInformation implements Information {
     }
 
     private void init() {
-        try {
-            name = classDocument.selectFirst("h2").text();
+        name = classDocument.selectFirst("h2").text();
 
-            if (classDocument.select("div.block") == null) {
-                description = "";
-                rawDescription = "";
-            } else {
-                description = classDocument.selectFirst("div.block").text();
-                rawDescription = classDocument.selectFirst("div.block").html();
-            }
-
-            url = classDocument.baseUri();
-
-            Element classDescBlock = classDocument.selectFirst("div.description");
-            extraInformation = Utilites.getExtraInformation(classDescBlock, false);
-            rawExtraInformation = Utilites.getExtraInformation(classDescBlock, true);
-
-            nestedClassList = getList("nested.class.summary", false);
-            methodList = getList("method.summary", false);
-            methodListWithParams = getList("method.summary", true);
-            enumList = getList("enum.constant.summary", false);
-            fieldList = getList("field.summary", false);
-
-            allFoundClasses = new ArrayList<>();
-        } catch (NullPointerException ignored) {
+        if (classDocument.select("div.block") == null) {
+            description = "";
+            rawDescription = "";
+        } else {
+            description = classDocument.selectFirst("div.block").text();
+            rawDescription = classDocument.selectFirst("div.block").html();
         }
 
+        url = classDocument.baseUri();
+
+        Element classDescBlock = classDocument.selectFirst("div.description");
+        extraInformation = Utilites.getExtraInformation(classDescBlock, false);
+        rawExtraInformation = Utilites.getExtraInformation(classDescBlock, true);
+
+        nestedClassList = getList("nested.class.summary", false);
+        methodList = getList("method.summary", false);
+        methodListWithParams = getList("method.summary", true);
+        enumList = getList("enum.constant.summary", false);
+        fieldList = getList("field.summary", false);
+        allFoundClasses = new ArrayList<>();
     }
 
 }
