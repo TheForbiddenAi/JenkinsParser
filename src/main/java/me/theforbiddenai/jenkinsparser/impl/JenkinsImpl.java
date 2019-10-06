@@ -46,40 +46,38 @@ public class JenkinsImpl implements Jenkins {
         query = query.replace("#", ".");
         query = query.endsWith(".") ? query.substring(0, query.length() - 1) : query;
 
+        List<Information> infoList = new ArrayList<>();
         try {
-            return Utilites.convertList(searchClasses(query));
-        } catch (Exception ex) {
-
-        }
+            infoList.addAll(Utilites.convertList(searchClasses(query)));
+        } catch (NullPointerException ignored) {}
 
         String className = query.contains(".") ? query.substring(0, query.lastIndexOf(".")) : query;
         String objectName = query.contains(".") ? query.substring(query.lastIndexOf(".") + 1) : null;
 
-        ClassInformation classInfo = getClass(className);
-        if (objectName != null) {
-            try {
-                return Utilites.convertList(searchMethods(classInfo, objectName));
-            } catch (NullPointerException ignored) {
+
+            if (objectName != null) {
+
+                ClassInformation classInfo = getClass(className);
+
+                try {
+                    infoList.addAll(Utilites.convertList(searchMethods(classInfo, objectName)));
+                } catch (NullPointerException ignored) {}
+
+                try {
+                    infoList.add(getEnum(classInfo, objectName));
+                } catch (NullPointerException ignored) {}
+
+                try {
+                    infoList.add(getField(classInfo, objectName));
+                } catch (NullPointerException ignored) {}
+
             }
 
-            List<Information> infoList = new ArrayList<>();
-
-            try {
-                infoList.add(getEnum(classInfo, objectName));
-                return infoList;
-            } catch (NullPointerException ignored) {
-            }
-
-            try {
-                infoList.add(getField(classInfo, objectName));
-                return infoList;
-            } catch (NullPointerException ignored) {
-            }
-
+        if (infoList.size() == 0) {
             throw new NullPointerException("Couldn't find the specified query!");
         }
 
-        return null;
+        return infoList;
     }
 
     /**
@@ -90,16 +88,19 @@ public class JenkinsImpl implements Jenkins {
      */
     @Override
     public ClassInformation getClass(String className) {
+        try {
+            ClassInformation classInfo = (ClassInformation) CACHE.getInformation(className);
+            if (classInfo != null) {
+                return classInfo;
+            }
 
-        ClassInformation classInfo = (ClassInformation) CACHE.getInformation(className);
-        if (classInfo != null) {
+            classInfo = new ClassInformation(baseURL, classList, className);
+            CACHE.insertInformation(className, classInfo);
+
             return classInfo;
+        } catch (ClassCastException ex) {
+            throw new NullPointerException("Class not found!");
         }
-
-        classInfo = new ClassInformation(baseURL, classList, className);
-        CACHE.insertInformation(className, classInfo);
-
-        return classInfo;
     }
 
     /**
@@ -134,15 +135,19 @@ public class JenkinsImpl implements Jenkins {
      */
     @Override
     public MethodInformation getMethod(ClassInformation classInfo, String methodName) {
-        MethodInformation methodInfo = (MethodInformation) CACHE.getInformation(classInfo.getName() + "." + methodName);
-        if (methodInfo != null) {
+        try {
+            MethodInformation methodInfo = (MethodInformation) CACHE.getInformation(classInfo.getName() + "." + methodName);
+            if (methodInfo != null) {
+                return methodInfo;
+            }
+
+            methodInfo = new MethodInformation(classInfo, methodName);
+            CACHE.insertInformation(classInfo.getName() + "." + methodName, methodInfo);
+
             return methodInfo;
+        } catch (ClassCastException ex) {
+            throw new NullPointerException("Couldn't find the specified method!");
         }
-
-        methodInfo = new MethodInformation(classInfo, methodName);
-        CACHE.insertInformation(classInfo.getName() + "." + methodName, methodInfo);
-
-        return methodInfo;
     }
 
     /**
@@ -190,15 +195,19 @@ public class JenkinsImpl implements Jenkins {
      */
     @Override
     public EnumInformation getEnum(ClassInformation classInfo, String enumName) {
-        EnumInformation enumInfo = (EnumInformation) CACHE.getInformation(classInfo.getName() + "." + enumName);
-        if (enumInfo != null) {
+        try {
+            EnumInformation enumInfo = (EnumInformation) CACHE.getInformation(classInfo.getName() + "." + enumName);
+            if (enumInfo != null) {
+                return enumInfo;
+            }
+
+            enumInfo = new EnumInformation(classInfo, enumName);
+            CACHE.insertInformation(classInfo.getName() + "." + enumName, enumInfo);
+
             return enumInfo;
+        } catch (ClassCastException ex) {
+            throw new NullPointerException("Could not find the specified enum");
         }
-
-        enumInfo = new EnumInformation(classInfo, enumName);
-        CACHE.insertInformation(classInfo.getName() + "." + enumName, enumInfo);
-
-        return enumInfo;
     }
 
     /**
@@ -222,15 +231,19 @@ public class JenkinsImpl implements Jenkins {
      */
     @Override
     public FieldInformation getField(ClassInformation classInfo, String fieldName) {
-        FieldInformation fieldInfo = (FieldInformation) CACHE.getInformation(classInfo.getName() + "." + fieldName);
-        if (fieldInfo != null) {
+        try {
+            FieldInformation fieldInfo = (FieldInformation) CACHE.getInformation(classInfo.getName() + "." + fieldName);
+            if (fieldInfo != null) {
+                return fieldInfo;
+            }
+
+            fieldInfo = new FieldInformation(classInfo, fieldName);
+            CACHE.insertInformation(classInfo.getName() + "." + fieldName, fieldInfo);
+
             return fieldInfo;
+        } catch (ClassCastException ex) {
+            throw new NullPointerException("Could not find the specified field");
         }
-
-        fieldInfo = new FieldInformation(classInfo, fieldName);
-        CACHE.insertInformation(classInfo.getName() + "." + fieldName, fieldInfo);
-
-        return fieldInfo;
     }
 
     /**

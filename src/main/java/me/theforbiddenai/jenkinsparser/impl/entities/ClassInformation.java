@@ -47,7 +47,8 @@ public class ClassInformation implements Information {
 
         try {
             init();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     public ClassInformation(String baseUrl, ArrayList<Element> classList, String className) {
@@ -260,20 +261,31 @@ public class ClassInformation implements Information {
                 (firstTr.selectFirst("th.colSecond") != null ? "th.colSecond" : "td.colLast");
 
 
-        HashMap<String, String> methodList = new HashMap<>();
+        HashMap<String, String> linkList = new HashMap<>();
+
         tableBody.select("tr").stream()
                 .filter(element -> element.selectFirst("td") != null)
                 .forEach(tableRow -> {
                     Element column = tableRow.selectFirst(columnToGet);
                     String methodName = column.text();
 
-                    String href = column.selectFirst("a").attr("href").replace("../", "");
-                    String url = (href.startsWith("#") ? getUrl() : baseUrl) + href;
+                    String href = column.selectFirst("a").attr("href");
 
-                    methodList.put(methodName, url);
+                    String docUrl = classDocument.baseUri();
+                    docUrl = docUrl.substring(0, docUrl.lastIndexOf("/") + 1);
+
+                    String url;
+                    if (href.contains("../") || href.contains("#")) {
+                        href = href.replace("../", "");
+                        url = (href.startsWith("#") ? getUrl() : baseUrl) + href;
+                    } else {
+                        url = docUrl + href;
+                    }
+
+                    linkList.put(methodName.toLowerCase(), url);
                 });
 
-        return methodList;
+        return linkList;
     }
 
     /**
@@ -322,6 +334,14 @@ public class ClassInformation implements Information {
                 }
             }
 
+            String docName = classDocument.selectFirst("h2").text();
+            docName = docName.contains(" ") ? docName.substring(docName.indexOf(" ")).trim() : docName;
+            String queryJoined = String.join(".", queryArgs);
+
+            if (!docName.equalsIgnoreCase(queryJoined)) {
+                return null;
+            }
+
             foundClasses.add(classDocument);
         } else {
             if (elementList.size() == 0) return null;
@@ -338,7 +358,6 @@ public class ClassInformation implements Information {
         try {
             return Jsoup.connect(url).get();
         } catch (IOException ex) {
-            ex.printStackTrace();
             return null;
         }
     }

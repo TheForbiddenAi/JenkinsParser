@@ -30,7 +30,7 @@ public class Utilites {
 
         linkList.keySet().forEach(name -> {
             if (name.equalsIgnoreCase(objectName)) {
-                info.add(linkList.get(objectName));
+                info.add(linkList.get(objectName.toLowerCase()));
             }
         });
 
