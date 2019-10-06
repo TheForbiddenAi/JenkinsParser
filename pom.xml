@@ -6,7 +6,7 @@
 
     <groupId>JenkinsParser</groupId>
     <artifactId>JenkinsParser</artifactId>
-    <version>RELEASE-v1.0.3</version>
+    <version>RELEASE-v1.0.4</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

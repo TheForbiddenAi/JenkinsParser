@@ -11,7 +11,7 @@ A java api to easily parse jenkins javadocs
 <dependency>
     <groupId>com.github.TheForbiddenAi</groupId>
     <artifactId>JenkinsParser</artifactId>
-    <version>v1.0.3</version>
+    <version>v1.0.4</version>
 </dependency>
   ```
 
