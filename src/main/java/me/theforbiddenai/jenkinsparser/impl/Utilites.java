@@ -30,7 +30,7 @@ public class Utilites {
 
         linkList.keySet().forEach(name -> {
             if (name.equalsIgnoreCase(objectName)) {
-                info.add(linkList.get(objectName.toLowerCase()));
+                info.add(linkList.get(name));
             }
         });
 
@@ -74,7 +74,7 @@ public class Utilites {
             }
 
             String infoBuilderString = infoBuilder.toString().trim();
-            infoBuilderString = rawHtml ? infoBuilderString.replace("\n", "<br>") : infoBuilderString;
+            infoBuilderString = rawHtml ? infoBuilderString.replaceAll("([a-zA-z])<code>", "$1<br><code>") : infoBuilderString;
 
             extraInfo.put(label.text(), infoBuilderString);
         });

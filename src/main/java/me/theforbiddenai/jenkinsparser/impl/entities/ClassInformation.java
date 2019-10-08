@@ -282,7 +282,7 @@ public class ClassInformation implements Information {
                         url = docUrl + href;
                     }
 
-                    linkList.put(methodName.toLowerCase(), url);
+                    linkList.put(methodName, url);
                 });
 
         return linkList;

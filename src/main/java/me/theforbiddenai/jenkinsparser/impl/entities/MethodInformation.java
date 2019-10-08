@@ -51,7 +51,8 @@ public class MethodInformation implements Information {
 
         try {
             init();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
@@ -173,7 +174,7 @@ public class MethodInformation implements Information {
         methodLinkListNames.sort(Comparator.comparing(String::length));
 
         methodLinkListNames.forEach(name -> {
-            String check = name.substring(0, name.lastIndexOf("("));
+            String check = name.substring(0, name.indexOf("("));
             if (check.equalsIgnoreCase(methodName)) {
                 String url = methodLinkList.get(name);
                 foundMethods.add(url);
@@ -197,10 +198,29 @@ public class MethodInformation implements Information {
                 .map(Element::parent)
                 .collect(Collectors.toList());
 
-        int i = 0;
+        int count = 0;
+
+        String urlToSkip = null;
         for (String url : foundMethods) {
-            methods.put(elementList.get(i), url);
-            i++;
+
+            if (url.equalsIgnoreCase(urlToSkip)) {
+                url = foundMethods.get(count - 1);
+            }
+            Element foundMethodElement = elementList.get(count);
+
+
+            if (elementList.size() > 1) {
+                Element divBlock = foundMethodElement.selectFirst("div.block");
+                if (divBlock != null && divBlock.text().toLowerCase().contains("deprecated")) {
+                    urlToSkip = foundMethods.get(count + 1);
+                    methods.put(foundMethodElement, urlToSkip);
+                    count++;
+                    continue;
+                }
+            }
+
+            methods.put(foundMethodElement, url);
+            count++;
         }
 
         return methods;
@@ -214,6 +234,8 @@ public class MethodInformation implements Information {
         for (Map.Entry<String, String> entrySet : classMethodLinkList.entrySet()) {
             if (entrySet.getValue().equalsIgnoreCase(getUrl())) {
                 nameWithParameters = entrySet.getKey();
+                nameWithParameters = nameWithParameters.substring(0, nameWithParameters.indexOf(")") + 1);
+
             }
         }
 
