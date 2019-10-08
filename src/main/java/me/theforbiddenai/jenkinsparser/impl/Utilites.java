@@ -73,8 +73,12 @@ public class Utilites {
                 nextElement = nextElement.nextElementSibling();
             }
 
-            extraInfo.put(label.text(), infoBuilder.toString().trim());
+            String infoBuilderString = infoBuilder.toString().trim();
+            infoBuilderString = rawHtml ? infoBuilderString.replace("\n", "<br>") : infoBuilderString;
+
+            extraInfo.put(label.text(), infoBuilderString);
         });
+
 
 
         return extraInfo;

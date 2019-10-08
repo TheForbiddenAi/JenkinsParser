@@ -7,10 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MethodInformation implements Information {
@@ -166,15 +163,20 @@ public class MethodInformation implements Information {
      * @return The list of methods with that name or null if none are found
      */
     private @Nullable HashMap<Element, String> getMethods(String methodName) {
-        HashMap<String, String> foundMethods = new HashMap<>();
+        List<String> foundMethods = new ArrayList<>();
 
         HashMap<String, String> methodLinkList = classMethodLinkList;
         if (methodLinkList == null) return null;
 
-        methodLinkList.forEach((name, url) -> {
-            String check = name.substring(0, name.indexOf("("));
+        List<String> methodLinkListNames = new ArrayList<>(methodLinkList.keySet());
+
+        methodLinkListNames.sort(Comparator.comparing(String::length));
+
+        methodLinkListNames.forEach(name -> {
+            String check = name.substring(0, name.lastIndexOf("("));
             if (check.equalsIgnoreCase(methodName)) {
-                foundMethods.put(name, url);
+                String url = methodLinkList.get(name);
+                foundMethods.add(url);
             }
         });
 
@@ -196,7 +198,7 @@ public class MethodInformation implements Information {
                 .collect(Collectors.toList());
 
         int i = 0;
-        for (String url : foundMethods.values()) {
+        for (String url : foundMethods) {
             methods.put(elementList.get(i), url);
             i++;
         }
