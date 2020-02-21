@@ -1,3 +1,5 @@
+### Important
+This has been replaced by [JenkinsParser-Kotlin](https://github.com/TheForbiddenAi/JenkinsParser-Kotlin)
 # JenkinsParser
 A java api to easily parse jenkins javadocs
 ## Usage
